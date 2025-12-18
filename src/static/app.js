@@ -158,3 +158,54 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   fetchActivities();
 });
+
+
+// Google Maps initialization
+window.initMap = async function () {
+  const mapEl = document.getElementById("map");
+  if (!mapEl) return;
+
+  const defaultCenter = { lat: 37.4221, lng: -122.0841 };
+  const map = new google.maps.Map(mapEl, {
+    center: defaultCenter,
+    zoom: 13,
+  });
+
+  // Try to center on user location when available
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        map.setCenter(userLoc);
+      },
+      () => {
+        /* ignore */
+      }
+    );
+  }
+
+  // Load hangouts from backend and add markers
+  try {
+    const res = await fetch("/hangouts");
+    const hangouts = await res.json();
+
+    hangouts.forEach((h) => {
+      const pos = { lat: Number(h.lat), lng: Number(h.lng) };
+      const marker = new google.maps.Marker({ position: pos, map, title: h.title });
+
+      const content = `
+        <div class="iw">
+          <strong>${h.title}</strong><br />
+          ${h.date} ${h.time}<br />
+          <em>${h.host}</em><br />
+          <div>${h.description}</div>
+        </div>
+      `;
+
+      const infow = new google.maps.InfoWindow({ content });
+      marker.addListener("click", () => infow.open(map, marker));
+    });
+  } catch (err) {
+    console.error("Failed to load hangouts for map:", err);
+  }
+};
