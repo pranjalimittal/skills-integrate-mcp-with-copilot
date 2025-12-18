@@ -21,6 +21,12 @@
         </div>
       </section>
 
+      <section id="map-section">
+        <h3>Map of Hangouts</h3>
+        <div id="map" style="height: 400px; width: 100%; background: #eee;"></div>
+        <p class="note">To enable the interactive map, replace <strong>REPLACE_WITH_YOUR_API_KEY</strong> in the Google Maps script tag with a valid API key and enable the Maps JavaScript API and Places API.</p>
+      </section>
+
       <section id="signup-container">
         <h3>Sign Up for an Activity</h3>
         <form id="signup-form">
@@ -46,5 +52,7 @@
     </footer>
 
     <script src="app.js"></script>
+    <!-- Load Google Maps JS API: replace the API key placeholder before use -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=REPLACE_WITH_YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
   </body>
 </html>

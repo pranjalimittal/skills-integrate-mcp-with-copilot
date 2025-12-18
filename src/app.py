@@ -5,7 +5,7 @@ A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
@@ -77,6 +77,20 @@ activities = {
     }
 }
 
+# In-memory hangouts/events store (simple sample data)
+hangouts = [
+    {
+        "title": "Lunchtime Chess Meetup",
+        "host": "Ms. Carter",
+        "lat": 37.4221,
+        "lng": -122.0841,
+        "type": "Meetup",
+        "time": "12:30 PM",
+        "date": "2025-12-20",
+        "description": "Bring a board and join other students for casual chess games."
+    }
+]
+
 
 @app.get("/")
 def root():
@@ -86,6 +100,31 @@ def root():
 @app.get("/activities")
 def get_activities():
     return activities
+
+
+@app.get("/hangouts")
+def get_hangouts():
+    """Return the list of hangouts/events with coordinates."""
+    return hangouts
+
+
+@app.post("/hangouts")
+def create_hangout(hangout: dict = Body(...)):
+    """Create a new hangout/event. Minimal validation is performed."""
+    required = ["title", "host", "lat", "lng", "type", "time", "date", "description"]
+    missing = [r for r in required if r not in hangout]
+    if missing:
+        raise HTTPException(status_code=400, detail={"error": "missing_fields", "fields": missing})
+
+    # Coerce lat/lng to floats when possible
+    try:
+        hangout["lat"] = float(hangout["lat"])
+        hangout["lng"] = float(hangout["lng"])
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid latitude/longitude values")
+
+    hangouts.append(hangout)
+    return hangout
 
 
 @app.post("/activities/{activity_name}/signup")
